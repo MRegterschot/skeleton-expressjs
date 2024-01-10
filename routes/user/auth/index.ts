@@ -10,6 +10,16 @@ import Handlebars from 'handlebars';
 
 const router = express.Router();
 
+/*
+  @route POST /user/auth/login
+  @desc Login user
+  @access Public
+
+  @param {string} email
+  @param {string} password
+
+  @return {object} user
+*/
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
 
@@ -45,7 +55,7 @@ router.post('/login', (req, res) => {
           let tokens: any = await createSession(user._id);
 
           res.send({
-            user: { _id: user._id, avatar: user.avatar?.fullpath, username: user.username },
+            user: { _id: user._id, username: user.username },
             accessToken: tokens.accessToken,
             refreshToken: tokens.refreshToken,
           });
@@ -61,6 +71,17 @@ router.post('/login', (req, res) => {
     });
 });
 
+/*
+  @route POST /user/auth/register
+  @desc Register user
+  @access Public
+
+  @param {string} username
+  @param {string} email
+  @param {string} password
+
+  @return {object} user
+*/
 router.post('/register', async (req, res) => {
   const { username, email, password } = req.body;
 
@@ -106,6 +127,15 @@ router.post('/register', async (req, res) => {
     });
 });
 
+/*
+  @route POST /user/auth/verify/:token
+  @desc Verify user
+  @access Public
+
+  @param {string} token
+
+  @return {object} user
+*/
 router.post('/verify/:token', (req, res) => {
   const { token } = req.params;
 
@@ -144,6 +174,15 @@ router.post('/verify/:token', (req, res) => {
     });
 });
 
+/*
+  @route POST /user/auth/refresh
+  @desc Refresh access token
+  @access Public
+
+  @param {string} refreshToken
+
+  @return {object} user
+*/
 router.post('/refresh', verifyRefreshToken, (req, res) => {
   // @ts-ignore
   createSession(req.userId)
@@ -156,7 +195,8 @@ router.post('/refresh', verifyRefreshToken, (req, res) => {
     });
 });
 
-function verifyEmail(token, email, username) {
+// send email to verify account
+function verifyEmail(token: string, email: string, username: string) {
   return new Promise((resolve, reject) => {
     const verifyUrl = `${process.env.VERIFY_URL}/${token}`;
 
@@ -180,9 +220,9 @@ function verifyEmail(token, email, username) {
     }
 
     let mailOptions = {
-      from: `"Setups.top" <${process.env.MAIL_FROM}>`,
+      from: process.env.MAIL_FROM,
       to: email,
-      subject: 'Verify your Setups.top account',
+      subject: 'Verify your account',
       html: template(emailData),
     };
 
@@ -197,7 +237,8 @@ function verifyEmail(token, email, username) {
   });
 }
 
-function isEmail(emailAdress){
+// check if email is valid (regex)
+function isEmail(emailAdress: string){
   let regex = /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-]+)(\.[a-zA-Z]{2,5}){1,2}$/;
 
   return emailAdress.match(regex) ? true : false;
