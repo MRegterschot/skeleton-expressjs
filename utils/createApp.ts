@@ -4,14 +4,7 @@ import cors from 'cors';
 
 export function createApp(): Express {
   const app = express();
-  app.use(cors({
-    origin: [
-      "https://setups.top",
-      "http://localhost:3000",
-      "https://www.setups.top",
-      "https://development.setups.top",
-    ],
-  }));
+  app.use(cors());
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
@@ -24,8 +17,6 @@ export function createApp(): Express {
   });
 
   app.use("/", routes)
-
-  app.use('/uploads', express.static('uploads'));
 
   return app;
 }
